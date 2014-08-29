@@ -17,7 +17,7 @@ The generated file will have 22 fields: packet counter, 14 EPOC EMotiv channel, 
 Addtionally, using the following function, you can import the data into Matlab:
 
 -------------
-function output = loadepoceegrawbyfile(fullfile,dowemean)
+ function output = loadepoceegrawbyfile(fullfile,dowemean)
 
 	fid = fopen( fullfile );
 
@@ -33,5 +33,5 @@ function output = loadepoceegrawbyfile(fullfile,dowemean)
 		output=output - ones(n,1)*mean(output,1);
 	end
 
-end
+ end
 ------------
