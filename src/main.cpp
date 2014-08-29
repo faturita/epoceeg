@@ -83,7 +83,7 @@ int main(int argc, char **argv) {
 		strcpy( subject, argv[2]);
 		duration = atoi(argv[3]);
 	} else 
-		throw std::exception("Please supply the log file name.\nUsage: EEGLogger [dat_filename without extension] [subject] [duration in seconds].");
+		throw std::exception("Please supply the log file name.\nUsage: Epoceeg [dat_filename without extension] [subject] [duration in seconds].");
 
 
 	// You can call here the experiment_protocol_sample or something similar.
@@ -133,7 +133,17 @@ int  eeglogger(char *filename, char *subject, int duration)
 
 		fullfilename = new char[256];
 
-		sprintf( fullfilename, PATH, subject, filename );
+		char temp[256];
+
+		sprintf ( temp , PATH, subject,"");
+
+		sprintf ( temp, "mkdir %s", temp);
+
+		system( temp );
+
+		std::cout << temp << std:enld;
+
+		sprintf( fullfilename, PATH, subject, filename);
 
 		/**
 		std::cout << "===================================================================" << std::endl;
