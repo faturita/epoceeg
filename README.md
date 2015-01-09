@@ -5,9 +5,9 @@ EPOC Headset basic command line EEG Capture app.  Quick, Dirty, and useful !
 
 Compile and do your work, and then:
 
-  epoceeg [dat_filename without extension] [subject] [duration in seconds].
+  epoceeg [dat_filename] [subject] [duration in seconds].
   
-* The [.dat] extension will be added to the generated log file.
+* The [.dat] extension is better for log file.
 * [Subject] will be a directory where the [.dat] file will be stored.
 * Add the [duration in seconds] for the captured data.
 

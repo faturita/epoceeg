@@ -1,30 +1,30 @@
 /**
- ** EEG Logger : Capture EEG info ONLINE from Emotiv and dump into plain ascii files.
- **
- ** You can use those files in MATLAB like this:
+** EEG Logger : Capture EEG info ONLINE from Emotiv and dump into plain ascii files.
+**
+** You can use those files in MATLAB like this:
 
 function output = loadepoceegrawbyfile(fullfile,dowemean)
 
-	fid = fopen( fullfile );
+fid = fopen( fullfile );
 
-	output_matrix = fscanf(fid, '%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f', [22 inf]);
+output_matrix = fscanf(fid, '%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f', [22 inf]);
 
-	fclose(fid);
+fclose(fid);
 
-	output_matrix = output_matrix';
-	output = output_matrix(:,2:15);
+output_matrix = output_matrix';
+output = output_matrix(:,2:15);
 
-	if (dowemean == 1)
-		[n,m]=size(output);
-		output=output - ones(n,1)*mean(output,1);
-	end
+if (dowemean == 1)
+[n,m]=size(output);
+output=output - ones(n,1)*mean(output,1);
+end
 
 end
 
- ** This program is a modification of the example5 that comes with the EPOC SDK library.
- **
- ** Rodrigo Ramele @ CiC Lab @ ITBA!
- **/
+** This program is a modification of the example5 that comes with the EPOC SDK library.
+**
+** Rodrigo Ramele @ CiC Lab @ ITBA!
+**/
 
 
 #include <iostream>
@@ -40,23 +40,23 @@ end
 
 #pragma comment(lib, "lib/edk.lib")
 
-#define	PATH	"C:\\Users\\User\\Desktop\\Data\\%s\\%s"
+#define	PATH	".\\Data\\%s\\%s"
 
 
 // This is the filter that we apply to EDK to tell him what field do we want to retrieve from the transmitted package from Emotiv.
 // In this case, we are using a 22 field stream.  This must match the definition that we can use later from Matlab in the fscanf command.
 EE_DataChannel_t targetChannelList[] = {
-		ED_COUNTER,
-		ED_AF3, ED_F7, ED_F3, ED_FC5, ED_T7, 
-		ED_P7, ED_O1, ED_O2, ED_P8, ED_T8, 
-		ED_FC6, ED_F4, ED_F8, ED_AF4, ED_GYROX, ED_GYROY, ED_TIMESTAMP, 
-		ED_FUNC_ID, ED_FUNC_VALUE, ED_MARKER, ED_SYNC_SIGNAL
-	};
+	ED_COUNTER,
+	ED_AF3, ED_F7, ED_F3, ED_FC5, ED_T7, 
+	ED_P7, ED_O1, ED_O2, ED_P8, ED_T8, 
+	ED_FC6, ED_F4, ED_F8, ED_AF4, ED_GYROX, ED_GYROY, ED_TIMESTAMP, 
+	ED_FUNC_ID, ED_FUNC_VALUE, ED_MARKER, ED_SYNC_SIGNAL
+};
 
 
 const char header[] = "COUNTER,AF3,F7,F3, FC5, T7, P7, O1, O2,P8" 
-                      ", T8, FC6, F4,F8, AF4,GYROX, GYROY, TIMESTAMP, "   
-                      "FUNC_ID, FUNC_VALUE, MARKER, SYNC_SIGNAL,";
+	", T8, FC6, F4,F8, AF4,GYROX, GYROY, TIMESTAMP, "   
+	"FUNC_ID, FUNC_VALUE, MARKER, SYNC_SIGNAL,";
 
 int  eeglogger(char *filename, char *subject, int duration);
 
@@ -83,7 +83,7 @@ int main(int argc, char **argv) {
 		strcpy( subject, argv[2]);
 		duration = atoi(argv[3]);
 	} else 
-		throw std::exception("Please supply the log file name.\nUsage: Epoceeg [dat_filename without extension] [subject] [duration in seconds].");
+		throw std::exception("Please supply the log file name.\nUsage: Epoceeg [dat_filename] [subject] [duration in seconds].");
 
 
 	// You can call here the experiment_protocol_sample or something similar.
@@ -95,9 +95,9 @@ int experiment_protocol_sample(char *fullfilename, char *filename, char *subject
 	std::cout << "S1: Relaxed eyes open." << std::endl;getchar();
 
 	sprintf(fullfilename,"%s_S1.dat",filename);eeglogger(fullfilename,subject,30);
-	
+
 	std::cout << "S2: Relaxed eyes closed." << std::endl;getchar();
-	
+
 	sprintf(fullfilename,"%s_S2.dat",filename);eeglogger(fullfilename,subject,30);
 
 	for(int i=1;i<=6;i++)
@@ -133,15 +133,18 @@ int  eeglogger(char *filename, char *subject, int duration)
 
 		fullfilename = new char[256];
 
+		int giveuptimer=0;
+
 		char temp[256];
+		char command[256];
 
 		sprintf ( temp , PATH, subject,"");
 
-		sprintf ( temp, "mkdir %s", temp);
+		sprintf ( command, "mkdir %s", temp);
 
-		system( temp );
+		system( command );
 
-		std::cout << temp << std:enld;
+		std::cout << command << std::endl;
 
 		sprintf( fullfilename, PATH, subject, filename);
 
@@ -161,14 +164,14 @@ int  eeglogger(char *filename, char *subject, int duration)
 		option = 1;
 
 		switch (option) {
-			case 1:
+		case 1:
 			{
 				if (EE_EngineConnect() != EDK_OK) {
 					throw std::exception("Emotiv Engine start up failed.");
 				}
 				break;
 			}
-			case 2:
+		case 2:
 			{
 				std::cout << "Target IP of EmoComposer? [127.0.0.1] ";
 				std::getline(std::cin, input, '\n');
@@ -183,12 +186,12 @@ int  eeglogger(char *filename, char *subject, int duration)
 				}
 				break;
 			}
-			default:
-				throw std::exception("Invalid option...");
-				break;
+		default:
+			throw std::exception("Invalid option...");
+			break;
 		}
-		
-		
+
+
 		std::cout << "Profile" << std::endl;
 		std::cout << "Subject:" << subject << std::endl;
 		std::cout << "Experiment:" << filename << std::endl;
@@ -196,9 +199,9 @@ int  eeglogger(char *filename, char *subject, int duration)
 		std::cout << "Duration:" << duration << std::endl;
 
 		std::cout << "Start receiving EEG Data! Press any key to stop logging...\n" << std::endl;
-    	std::ofstream ofs(fullfilename,std::ios::trunc);
+		std::ofstream ofs(fullfilename,std::ios::trunc);
 		//ofs << header << std::endl;
-		
+
 		DataHandle hData = EE_DataCreate();
 		EE_DataSetBufferSizeInSec(secs);
 
@@ -222,31 +225,39 @@ int  eeglogger(char *filename, char *subject, int duration)
 			}
 
 			if (readytocollect) {
-						
-						EE_DataUpdateHandle(0, hData);
+				giveuptimer=0;
+				EE_DataUpdateHandle(0, hData);
 
-						unsigned int nSamplesTaken=0;
-						EE_DataGetNumberOfSample(hData,&nSamplesTaken);
-		
-						std::cout << "[" <<(tick / frequency * 1.0)<< "]" << ":" << "Updated " << nSamplesTaken <<  ", Channels:" << sizeof(targetChannelList)/sizeof(EE_DataChannel_t) << std::endl;
+				unsigned int nSamplesTaken=0;
+				EE_DataGetNumberOfSample(hData,&nSamplesTaken);
 
-						if (nSamplesTaken != 0) {
+				std::cout << "[" <<(tick / frequency * 1.0)<< "]" << ":" << "Updated " << nSamplesTaken <<  ", Channels:" << sizeof(targetChannelList)/sizeof(EE_DataChannel_t) << std::endl;
 
-							double* data = new double[nSamplesTaken];
-							for (int sampleIdx=0 ; sampleIdx<(int)nSamplesTaken ; ++ sampleIdx) {
-								for (int i = 0 ; i<sizeof(targetChannelList)/sizeof(EE_DataChannel_t) ; i++) {
+				if (nSamplesTaken != 0) {
 
-									EE_DataGet(hData, targetChannelList[i], data, nSamplesTaken);
-									ofs << data[sampleIdx] << " ";
-								}	
-								ofs << std::endl;
-								tick++;
-							}
-							delete[] data;
-						}
+					double* data = new double[nSamplesTaken];
+					for (int sampleIdx=0 ; sampleIdx<(int)nSamplesTaken ; ++ sampleIdx) {
+						for (int i = 0 ; i<sizeof(targetChannelList)/sizeof(EE_DataChannel_t) ; i++) {
 
+							EE_DataGet(hData, targetChannelList[i], data, nSamplesTaken);
+							ofs << data[sampleIdx] << " ";
+						}	
+						ofs << std::endl;
+						tick++;
+					}
+					delete[] data;
+				}
+
+			} else {
+				printf(".");
+				giveuptimer++;
+
+				if (giveuptimer > 200)
+				{
+					std::cout << "No connection!  Is the EPOC connected?" << std::endl;
+					break;
+				}
 			}
-
 			Sleep(100);
 		}
 
