@@ -5,20 +5,19 @@
 
 function output = loadepoceegrawbyfile(fullfile,dowemean)
 
-fid = fopen( fullfile );
+	fid = fopen( fullfile );
 
-output_matrix = fscanf(fid, '%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f', [22 inf]);
+	output_matrix = fscanf(fid, '%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f', [22 inf]);
 
-fclose(fid);
+	fclose(fid);
 
-output_matrix = output_matrix';
-output = output_matrix(:,2:15);
+	output_matrix = output_matrix';
+	output = output_matrix(:,2:15);
 
-if (dowemean == 1)
-[n,m]=size(output);
-output=output - ones(n,1)*mean(output,1);
-end
-
+	if (dowemean == 1)
+		[n,m]=size(output);
+		output=output - ones(n,1)*mean(output,1);
+	end
 end
 
 ** This program is a modification of the example5 that comes with the EPOC SDK library.
@@ -33,6 +32,7 @@ end
 #include <sstream>
 #include <windows.h>
 #include <map>
+#include <time.h> 
 
 #include "EmoStateDLL.h"
 #include "edk.h"
@@ -60,6 +60,8 @@ const char header[] = "COUNTER,AF3,F7,F3, FC5, T7, P7, O1, O2,P8"
 
 int  eeglogger(char *filename, char *subject, int duration);
 
+int experiment_protocol_sample(char *subject) ;
+
 int main(int argc, char **argv) {
 
 	char *filename;
@@ -73,17 +75,26 @@ int main(int argc, char **argv) {
 	// defaulted subject
 	strcpy( subject, "KarlNeuron");
 
+	srand (time(NULL));
+
+	if (argc > 1 && strcmpi(argv[1],"experiment"))
+	{
+		return experiment_protocol_sample(subject);
+	} else
 	if (argc < 2) {
 		filename = new char[256];
 		strcpy(filename,"eeg.log");
 		duration = 10;
-	} else if (argc == 4)
+	} else 
+	if (argc == 4)
 	{
 		filename = argv[1];
 		strcpy( subject, argv[2]);
 		duration = atoi(argv[3]);
-	} else 
-		throw std::exception("Please supply the log file name.\nUsage: Epoceeg [dat_filename] [subject] [duration in seconds].");
+	} else {
+		std::cout << "Please supply the log file name.\nUsage: Epoceeg [dat_filename] [subject] [duration in seconds]." << std::endl; 
+		return -1;
+	}
 
 
 	// You can call here the experiment_protocol_sample or something similar.
@@ -91,20 +102,35 @@ int main(int argc, char **argv) {
 	return eeglogger(filename, subject, duration);
 }
 
-int experiment_protocol_sample(char *fullfilename, char *filename, char *subject) {
-	std::cout << "S1: Relaxed eyes open." << std::endl;getchar();
+int experiment_protocol_sample(char *subject) {
+	char *fullfilename = new char[256];
 
-	sprintf(fullfilename,"%s_S1.dat",filename);eeglogger(fullfilename,subject,30);
+	std::cout << "S1: Relaxed eyes open." << std::endl;
 
-	std::cout << "S2: Relaxed eyes closed." << std::endl;getchar();
+	std::cout << "Ready?" << std::endl; getchar();
 
-	sprintf(fullfilename,"%s_S2.dat",filename);eeglogger(fullfilename,subject,30);
+	Sleep(rand() % 10000 + 5000);
 
-	for(int i=1;i<=6;i++)
+	for(int i=1;i<=200;i++)
 	{
-		std::cout << "E" << i << ": Ready?" << std::endl;getchar();
-		sprintf(fullfilename,"%s_E%d.dat",filename,i);eeglogger(fullfilename,subject,70);
+		Sleep(rand() % 1000 + 1000);
+		sprintf(fullfilename,"e.%d.l.1.dat",i);eeglogger(fullfilename,subject,1);
 	}
+
+	Beep(523,10000); // 523 hertz (C5) for 500 milliseconds 
+
+	std::cout << "S2: Relaxed eyes closed." << std::endl;
+	std::cout << "Ready?" << std::endl; getchar();
+
+	Sleep(rand() % 10000 + 5000);
+
+	for(int i=16;i<=15;i++)
+	{
+		Sleep(rand() % 2000 + 1000);
+		sprintf(fullfilename,"e.%d.l.2.dat",i);eeglogger(fullfilename,subject,1);
+	}
+	
+	Beep(523,10000); // 523 hertz (C5) for 500 milliseconds 
 
 	return 1;
 }
@@ -237,13 +263,16 @@ int  eeglogger(char *filename, char *subject, int duration)
 
 					double* data = new double[nSamplesTaken];
 					for (int sampleIdx=0 ; sampleIdx<(int)nSamplesTaken ; ++ sampleIdx) {
-						for (int i = 0 ; i<sizeof(targetChannelList)/sizeof(EE_DataChannel_t) ; i++) {
+						if (tick < frequency * duration)
+						{
+							for (int i = 0 ; i<sizeof(targetChannelList)/sizeof(EE_DataChannel_t) ; i++) {
 
-							EE_DataGet(hData, targetChannelList[i], data, nSamplesTaken);
-							ofs << data[sampleIdx] << " ";
-						}	
-						ofs << std::endl;
-						tick++;
+								EE_DataGet(hData, targetChannelList[i], data, nSamplesTaken);
+								ofs << data[sampleIdx] << " ";
+							}	
+							ofs << std::endl;
+							tick++;
+						}
 					}
 					delete[] data;
 				}
